@@ -1,4 +1,3 @@
-use std::ffi::CString;
 use std::io::{self, Write};
 use rand::Rng;
 use rand::seq::SliceRandom;
@@ -61,6 +60,7 @@ struct Charakter {
 }
 
 
+#[derive(Clone)]
 enum Trait {
     Stark,
     Intelligent,
@@ -174,4 +174,36 @@ fn beschreibe_raum(räume: &Vec<Room>, raum_index: usize) {
     if raum.west.is_some() { println!("- Nach Westen"); }
 
     println!("");
+}
+
+struct Events {
+    name: String,
+    beschreibung: String,
+    effekte: i32,
+
+}
+
+
+enum Effekte {
+    Gesundheit,
+    Hunger,
+    Aggression,
+    Intelligenz,
+    // weitere effekte
+}
+
+
+fn random_events(charakter: Charakterter) -> Events {
+
+    let mut rng = rand::thread_rng();
+    let mut random_number = rng.gen_range(1..5);
+    let event = match random_number {
+
+        //events hier schreiben
+
+    }
+    //select random_event
+    println!("{}", event.beschreibung);
+
+    event
 }
