@@ -10,6 +10,7 @@ fn main() {
     let räume = neue_welt();
     let mut aktueller_raum_index = 0;
     let mut eingabe = String::new();
+    let mut user = Charakter::create_charakter("Spieler"); // Korrektur des Funktionsnamens
 
     loop {
         // Raum beschreiben
@@ -24,24 +25,83 @@ fn main() {
 
         // Eingabe verarbeiten
         match eingabe.as_str() {
-            "nord" | "n" => {
+            "nord" | "n" | "norden" => {
                 if let Some(neuer_raum) = räume[aktueller_raum_index].nord {
                     aktueller_raum_index = neuer_raum;
                     println!("Du gehst nach Norden.");
+
+                    // Zufallschance für ein Ereignis (20%)
+                    let mut rng = rand::thread_rng();
+                    if rng.gen_range(1..=100) <= 20 {
+                        let _event = random_events(&mut user);
+                    }
                 } else {
                     println!("Du kannst nicht nach Norden gehen.");
                 }
             },
-            "süd" | "s" => {
+            "süd" | "s" | "süden" => {
                 if let Some(neuer_raum) = räume[aktueller_raum_index].süd {
                     aktueller_raum_index = neuer_raum;
                     println!("Du gehst nach Süden.");
+
+                    // Zufallschance für ein Ereignis
+                    let mut rng = rand::thread_rng();
+                    if rng.gen_range(1..=100) <= 20 {
+                        let _event = random_events(&mut user);
+                    }
                 } else {
                     println!("Du kannst nicht nach Süden gehen.");
                 }
             },
-            // Weitere Richtungen...
-            "exit" => {
+            "ost" | "o" | "osten" => {
+                if let Some(neuer_raum) = räume[aktueller_raum_index].ost {
+                    aktueller_raum_index = neuer_raum;
+                    println!("Du gehst nach Osten.");
+
+                    // Zufallschance für ein Ereignis
+                    let mut rng = rand::thread_rng();
+                    if rng.gen_range(1..=100) <= 20 {
+                        let _event = random_events(&mut user);
+                    }
+                } else {
+                    println!("Du kannst nicht nach Osten gehen.");
+                }
+            },
+            "west" | "w" | "westen" => {
+                if let Some(neuer_raum) = räume[aktueller_raum_index].west {
+                    aktueller_raum_index = neuer_raum;
+                    println!("Du gehst nach Westen.");
+
+                    // Zufallschance für ein Ereignis
+                    let mut rng = rand::thread_rng();
+                    if rng.gen_range(1..=100) <= 20 {
+                        let _event = random_events(&mut user);
+                    }
+                } else {
+                    println!("Du kannst nicht nach Westen gehen.");
+                }
+            },
+            "status" => {
+                println!("===== Charakter-Status =====");
+                println!("Name: {}", user.name);
+                println!("Gesundheit: {}", user.gesundheit);
+                println!("Hunger: {}", user.hunger);
+                println!("Aggression: {}", user.aggression);
+                println!("Intelligenz: {}", user.intelligenz);
+                println!("Besonderheiten: {:?}", user.besonderheiten);
+                println!("==========================");
+            },
+            "hilfe" => {
+                println!("Verfügbare Befehle:");
+                println!("  nord/n/norden - Nach Norden gehen");
+                println!("  süd/s/süden - Nach Süden gehen");
+                println!("  ost/o/osten - Nach Osten gehen");
+                println!("  west/w/westen - Nach Westen gehen");
+                println!("  status - Charakterstatus anzeigen");
+                println!("  hilfe - Diese Hilfe anzeigen");
+                println!("  exit/beenden/verlassen - Spiel beenden");
+            },
+            "exit" | "beenden" | "verlassen" => {
                 println!("Das Spiel wird beendet.");
                 break;
             },
@@ -49,6 +109,10 @@ fn main() {
         }
     }
 }
+
+
+//Hauptschleife zu ende
+
 
 struct Charakter {
     name: String,
@@ -60,7 +124,7 @@ struct Charakter {
 }
 
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 enum Trait {
     Stark,
     Intelligent,
@@ -179,8 +243,8 @@ fn beschreibe_raum(räume: &Vec<Room>, raum_index: usize) {
 struct Events {
     name: String,
     beschreibung: String,
-    effekte: i32,
-
+    effekt_typ: Effekte,
+    effekt_wert: i32,
 }
 
 
@@ -193,16 +257,37 @@ enum Effekte {
 }
 
 
-fn random_events(charakter: Charakterter) -> Events {
-
+fn random_events(charakter: &mut Charakter) -> Events {
     let mut rng = rand::thread_rng();
-    let mut random_number = rng.gen_range(1..5);
+    let random_number = rng.gen_range(1..5);
+
     let event = match random_number {
+        1 => Events {
+            name: "Heilende Quelle".to_string(),
+            beschreibung: "Du findest eine heilende Quelle und trinkst daraus.".to_string(),
+            effekt_typ: Effekte::Gesundheit,
+            effekt_wert: 10,
+        },
+        2 => Events {
+            name: "Hungriger Wolf".to_string(),
+            beschreibung: "Ein hungriger Wolf greift dich an!".to_string(),
+            effekt_typ: Effekte::Gesundheit,
+            effekt_wert: -10,
+        },
+        3 => Events {
+            name: "Alte Frucht".to_string(),
+            beschreibung: "Du findest eine alte Frucht und isst sie.".to_string(),
+            effekt_typ: Effekte::Hunger,
+            effekt_wert: -5,
+        },
+        _ => Events {
+            name: "Seltsames Geräusch".to_string(),
+            beschreibung: "Du hörst ein seltsames Geräusch, aber nichts passiert.".to_string(),
+            effekt_typ: Effekte::Gesundheit,
+            effekt_wert: 0,
+        },
+    };
 
-        //events hier schreiben
-
-    }
-    //select random_event
     println!("{}", event.beschreibung);
 
     event
