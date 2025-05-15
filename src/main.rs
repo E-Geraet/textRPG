@@ -10,8 +10,10 @@ fn main() {
     let räume = neue_welt();
     let mut aktueller_raum_index = 0;
     let mut eingabe = String::new();
-    let mut user = Charakter::create_charakter("Spieler"); // Korrektur des Funktionsnamens
-
+    // In fn main(), direkt nach der Charaktererstellung:
+    let mut user = Charakter::create_charakter("Spieler");
+    user.logbuch.füge_eintrag_hinzu(String::from("Das Abenteuer beginnt!"));
+    user.logbuch.füge_eintrag_hinzu(format!("Charakter {} wurde erstellt.", user.name));
     loop {
         // Raum beschreiben
         beschreibe_raum(&räume, aktueller_raum_index);
@@ -33,7 +35,7 @@ fn main() {
                     // Zufallschance für ein Ereignis (20%)
                     let mut rng = rand::thread_rng();
                     if rng.gen_range(1..=100) <= 20 {
-                        let _event = random_events(&mut user);
+                         random_events(&mut user);
                     }
                 } else {
                     println!("Du kannst nicht nach Norden gehen.");
@@ -47,7 +49,7 @@ fn main() {
                     // Zufallschance für ein Ereignis
                     let mut rng = rand::thread_rng();
                     if rng.gen_range(1..=100) <= 20 {
-                        let _event = random_events(&mut user);
+                        random_events(&mut user);
                     }
                 } else {
                     println!("Du kannst nicht nach Süden gehen.");
@@ -61,7 +63,7 @@ fn main() {
                     // Zufallschance für ein Ereignis
                     let mut rng = rand::thread_rng();
                     if rng.gen_range(1..=100) <= 20 {
-                        let _event = random_events(&mut user);
+                         random_events(&mut user);
                     }
                 } else {
                     println!("Du kannst nicht nach Osten gehen.");
@@ -75,7 +77,7 @@ fn main() {
                     // Zufallschance für ein Ereignis
                     let mut rng = rand::thread_rng();
                     if rng.gen_range(1..=100) <= 20 {
-                        let _event = random_events(&mut user);
+                        random_events(&mut user);
                     }
                 } else {
                     println!("Du kannst nicht nach Westen gehen.");
@@ -100,7 +102,12 @@ fn main() {
                 println!("  status - Charakterstatus anzeigen");
                 println!("  hilfe - Diese Hilfe anzeigen");
                 println!("  exit/beenden/verlassen - Spiel beenden");
+                println!("  logbuch - Einträge im Logbuch anzeigen")
             },
+            "logbuch" => {
+                user.logbuch.zeige_einträge();
+            }
+
             "exit" | "beenden" | "verlassen" => {
                 println!("Das Spiel wird beendet.");
                 break;
@@ -121,6 +128,7 @@ struct Charakter {
     hunger: i32,
     intelligenz: i32,
     besonderheiten: Vec<Trait>,
+    logbuch: Logbuch,
 }
 
 
@@ -157,6 +165,7 @@ impl Charakter {
             hunger,
             intelligenz,
             besonderheiten,
+            logbuch: Logbuch::new(),
         }
     }
 
@@ -257,38 +266,113 @@ enum Effekte {
 }
 
 
-fn random_events(charakter: &mut Charakter) -> Events {
-    let mut rng = rand::thread_rng();
-    let random_number = rng.gen_range(1..5);
+// ... (dein bestehender Code für Charakter, Events, Effekte) ...
 
-    let event = match random_number {
-        1 => Events {
-            name: "Heilende Quelle".to_string(),
-            beschreibung: "Du findest eine heilende Quelle und trinkst daraus.".to_string(),
-            effekt_typ: Effekte::Gesundheit,
-            effekt_wert: 10,
+fn random_events(charakter: &mut Charakter) { // Gibt jetzt kein Events-Objekt mehr zurück, oder du entscheidest dich, es trotzdem für Logging zurückzugeben
+    let mut rng = rand::thread_rng();
+    let random_number = rng.gen_range(1..=4); // Angepasst an die Anzahl deiner Events
+
+    let event_name: String;
+    let event_beschreibung: String;
+    let event_effekt_typ: Effekte;
+    let event_effekt_wert: i32;
+
+    match random_number {
+        1 => {
+            event_name = "Heilende Quelle".to_string();
+            event_beschreibung = "Du findest eine heilende Quelle und trinkst daraus.".to_string();
+            event_effekt_typ = Effekte::Gesundheit;
+            event_effekt_wert = 10;
         },
-        2 => Events {
-            name: "Hungriger Wolf".to_string(),
-            beschreibung: "Ein hungriger Wolf greift dich an!".to_string(),
-            effekt_typ: Effekte::Gesundheit,
-            effekt_wert: -10,
+        2 => {
+            event_name = "Hungriger Wolf".to_string();
+            event_beschreibung = "Ein hungriger Wolf greift dich an!".to_string();
+            event_effekt_typ = Effekte::Gesundheit;
+            event_effekt_wert = -10;
         },
-        3 => Events {
-            name: "Alte Frucht".to_string(),
-            beschreibung: "Du findest eine alte Frucht und isst sie.".to_string(),
-            effekt_typ: Effekte::Hunger,
-            effekt_wert: -5,
+        3 => {
+            event_name = "Alte Frucht".to_string();
+            event_beschreibung = "Du findest eine alte Frucht und isst sie.".to_string();
+            event_effekt_typ = Effekte::Hunger;
+            event_effekt_wert = -5; // Beispiel: Hunger reduzieren (positiver Effekt auf Hungerwert)
+            // oder wenn Hunger = 0 "satt" bedeutet und höhere Werte "hungriger": effekt_wert = 5
         },
-        _ => Events {
-            name: "Seltsames Geräusch".to_string(),
-            beschreibung: "Du hörst ein seltsames Geräusch, aber nichts passiert.".to_string(),
-            effekt_typ: Effekte::Gesundheit,
-            effekt_wert: 0,
+        _ => { // Fallback, falls mehr Zahlen generiert werden als Events da sind
+            event_name = "Seltsames Geräusch".to_string();
+            event_beschreibung = "Du hörst ein seltsames Geräusch, aber nichts passiert.".to_string();
+            event_effekt_typ = Effekte::Gesundheit; // Beispiel, kein Effekt
+            event_effekt_wert = 0;
         },
     };
 
-    println!("{}", event.beschreibung);
+    println!("{}", event_beschreibung);
 
-    event
+    // Effekt auf Charakter anwenden
+    match event_effekt_typ {
+        Effekte::Gesundheit => {
+            charakter.gesundheit += event_effekt_wert;
+            println!("Deine Gesundheit ändert sich um {}.", event_effekt_wert);
+        }
+        Effekte::Hunger => {
+            charakter.hunger += event_effekt_wert;
+            // Überlege dir, ob ein hoher Hungerwert "hungrig" oder "satt" bedeutet.
+            // Wenn 0 = satt und positive Werte = hungrig, dann sollte ein Event, das Hunger stillt, den Wert reduzieren.
+            // Wenn dein Event "Alte Frucht" Hunger stillt, sollte es z.B. hunger -= 5 sein.
+            // Oder wenn es den Hunger erhöht: hunger += 5
+            println!("Dein Hunger ändert sich um {}.", event_effekt_wert);
+        }
+        Effekte::Aggression => {
+            charakter.aggression += event_effekt_wert;
+            println!("Deine Aggression ändert sich um {}.", event_effekt_wert);
+        }
+        Effekte::Intelligenz => {
+            charakter.intelligenz += event_effekt_wert;
+            println!("Deine Intelligenz ändert sich um {}.", event_effekt_wert);
+        }
+        // Füge hier weitere Effekte hinzu, wenn du dein Enum Effekte erweiterst
+    }
+
+    // Optional: Grenzen für Attribute sicherstellen (z.B. Gesundheit nicht über Max, nicht unter 0)
+    if charakter.gesundheit > 100 { // Annahme: Max-Gesundheit ist 100
+        charakter.gesundheit = 100;
+    }
+    if charakter.gesundheit < 0 {
+        charakter.gesundheit = 0;
+        // Hier könntest du später auch einen "Game Over"-Zustand auslösen
+        println!("Du hast keine Gesundheit mehr!");
+    }
+    // Ähnliche Überprüfungen für Hunger etc.
+}
+
+
+struct Logbuch {
+    einträge: Vec<String>,
+}
+
+
+
+
+
+impl Logbuch {
+    fn new() -> Self {
+        Logbuch {
+            einträge: Vec::new(),
+        }
+    }
+
+    fn füge_eintrag_hinzu(&mut self, text: String) {
+        self.einträge.push(text);
+    }
+
+    fn zeige_einträge(&self) {
+        if self.einträge.is_empty() {
+            println!("Das Logbuch ist noch leer.");
+            return;
+        }
+        println!("===== Logbuch =====");
+        for (index, eintrag) in self.einträge.iter().enumerate() {
+            println!("{}. {}", index + 1, eintrag);
+        }
+        println!("===================");
+    }
 }
